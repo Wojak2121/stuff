@@ -1,3 +1,5 @@
+/*! Graph.js */
+
 class Graph {
     /**
      * A graph.
