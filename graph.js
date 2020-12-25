@@ -1,5 +1,3 @@
-/*! Graph.js */
-
 class Graph {
     /**
      * A graph.
@@ -8,8 +6,6 @@ class Graph {
         this.canvas
         this.ctx
 
-        this.step = 5
-
         this.font = 'arial'
 
         this.scaleX = 0
@@ -17,8 +13,6 @@ class Graph {
 
         this.translationX = 0
         this.translationY = 0
-
-        this.defaultLineWidth = 3
 
         this.functionPrecision = 2
         this.functionPrecisionStep = 0.01
@@ -45,27 +39,42 @@ class Graph {
         this.translationX = 0
         this.translationY = 0
 
+        document.body.style.fontFamily = 'Arial'
+
         document.body.appendChild(this.canvas)
         return this.canvas
     }
 
     /**
-     * Sets the size of the graph's canvas.
+     * Sets the size of the graph.
      * @param {number} width Width of the graph's canvas.
      * @param {number} height Height of the graph's canvas.
      */
-    setCanvasSize(width, height) {
+    setSize(width, height) {
         this.canvas.width = width
         this.canvas.height = height
     }
 
+    /**
+     * Returns a function graph that goes from the left to the right of the graph.
+     * @param {function} fun Function to plot.
+     * @param {string} color Color.
+     * @param {number} step Distance between every point (e.g. 0.01)
+     * @param {number} precision How many decimals points to check (e.g. 2)
+     * @returns {FunctionGraph} Plotted function.
+     */
     getFunctionGraph(fun, color, step, precision) {
         const start = Math.trunc(-this.translationX / this.scaleX) - 1
         const end = Math.trunc((-this.translationX + this.canvas.width) / this.scaleX) + 1
         return new FunctionGraph(fun, start, end, color, step, precision)
     }
 
-    drawAxis(lineWidth = 3, color = 'black') {
+    /**
+     * Draws axis.
+     * @param {number} lineWidth Line width.
+     * @param {string} color Color.
+     */
+    drawAxis(lineWidth=3, color='black') {
         const ctx = this.ctx
 
         ctx.lineWidth = lineWidth
@@ -78,21 +87,27 @@ class Graph {
         ctx.stroke()
     }
 
-    drawGrid(step=1) {
+    /**
+     * Draws a grid.
+     * @param {number} step Distance between each line.
+     * @param {number} width Line width.
+     * @param {string} color Color.
+     */
+    drawGrid(step=1, width=1, color='black') {
         const ctx = this.ctx
 
         const scaleX = this.scaleX * step
         const scaleY = this.scaleY * step
         const scaleAbsX = Math.abs(scaleX)
         const scaleAbsY = Math.abs(scaleY)
-        // this is bad
+
         const startX = this.translationX % scaleX - scaleAbsX
         const startY = this.translationY % scaleY - scaleAbsY
         const endX = startX + this.canvas.width + scaleAbsX
         const endY = startY + this.canvas.height + scaleAbsX
 
-        ctx.strokeStyle = 'black'
-        ctx.lineWidth = 1
+        ctx.strokeStyle = color
+        ctx.lineWidth = width
         ctx.beginPath()
         for (let x = startX; x < endX; x += scaleAbsX) {
             this.ctx.moveTo(x, startY)
@@ -114,9 +129,23 @@ class Graph {
     }
 
     /**
+     * Centers the graph on the x axis.
+     */
+    centerX() {
+        this.translationX = this.canvas.width * 0.5
+    }
+
+    /**
+     * Centers the graph on the x axis.
+     */
+    centerY() {
+        this.translationY = this.canvas.height * 0.5
+    }
+
+    /**
      * Sets the translation of the graph to the given values.
-     * @param {number} x Translation on the y axis.
-     * @param {number} y Translation on the x axis.
+     * @param {number} x Translation on the x axis.
+     * @param {number} y Translation on the y axis.
      */
     setTranslation(x, y) {
         this.translationX = x
@@ -124,9 +153,25 @@ class Graph {
     }
 
     /**
-     * Translates the graph by the given values.
+     * Sets the translation of the graph on the x axis.
+     * @param {number} x Translation on the x axis.
+     */
+    setTranslationX(x) {
+        this.translationX = x
+    }
+    
+    /**
+     * Sets the translation of the graph on the y axis.
      * @param {number} x Translation on the y axis.
-     * @param {number} y Translation on the x axis.
+     */
+    setTranslationY(y) {
+        this.translationY = y
+    }
+
+    /**
+     * Translates the graph by the given values.
+     * @param {number} x Translation on the x axis.
+     * @param {number} y Translation on the y axis.
      */
     translate(x = g.canvas.width * 0.5, y = g.canvas.height * 0.5) {
         // probably should change this function
@@ -136,11 +181,27 @@ class Graph {
 
     /**
      * Sets the scale of the graph to the given values.
-     * @param {number} x Scale on the y axis.
-     * @param {number} y Scale on the x axis.
+     * @param {number} x Scale on the x axis.
+     * @param {number} y Scale on the u axis.
      */
     setScale(x, y) {
         this.scaleX = x
+        this.scaleY = y
+    }
+
+    /**
+     * Sets the scale of the graph on the x axis.
+     * @param {number} x Scale on the x axis.
+     */
+    setScaleX(x) {
+        this.scaleX = x
+    }
+    
+    /**
+     * Sets the scale of the graph on the y axis.
+     * @param {number} y Scale on the y axis.
+     */
+    setScaleY(y) {
         this.scaleY = y
     }
 
@@ -160,6 +221,7 @@ class Graph {
      * @param {string} font Font
      */
     setFont(font) {
+        this.font = font
         this.ctx.font = font
     }
 
@@ -171,7 +233,7 @@ class Graph {
     }
 
     /**
-     * Fill the graph's background with a color.
+     * Fills the graph's background with a color.
      * @param {string} color Color.
      */
     fillBackground(color) {
@@ -179,7 +241,14 @@ class Graph {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
     }
 
-    drawLine(pos1, pos2, color = 'black', width = Shape2D.defaultLineWidth) {
+    /**
+     * Draws a line.
+     * @param {Vec2} pos1 Start.
+     * @param {Vec2} pos2 End.
+     * @param {string} color Color.
+     * @param {number} width Width.
+     */
+    drawLine(pos1, pos2, color = 'black', width=Shape2D.defaultLineWidth) {
         const ctx = this.ctx
 
         ctx.lineWidth = width
@@ -191,7 +260,14 @@ class Graph {
         ctx.stroke()
     }
 
-    drawArrow(start, end, color = 'black') {
+    /**
+     * Draws an arrow.
+     * @param {Vec2} start Start.
+     * @param {Vec2} end End.
+     * @param {string} [color='black'] Color.
+     * @param {number} width Width.
+     */
+    drawArrow(start, end, color = 'black', width=Shape2D.defaultLineWidth) {
         const ctx = this.ctx
     
         const s = new Vec2(start.x * this.scaleX, start.y * this.scaleY)
@@ -220,35 +296,51 @@ class Graph {
         p2.add(s)
 
         ctx.beginPath()
-        ctx.moveTo(s.x, s.y)
-        ctx.lineTo(e.x, e.y)
-        ctx.moveTo(p1.x, p1.y)
-        ctx.lineTo(e.x, e.y)
-        ctx.lineTo(p2.x, p2.y)
-        ctx.lineWidth = Shape2D.defaultLineWidth
+        ctx.moveTo(s.x + this.translationX, s.y + this.translationY)
+        ctx.lineTo(e.x + this.translationX, e.y + this.translationY)
+        ctx.moveTo(p1.x + this.translationX, p1.y + this.translationY)
+        ctx.lineTo(e.x + this.translationX, e.y + this.translationY)
+        ctx.lineTo(p2.x + this.translationX, p2.y + this.translationY)
+        ctx.lineWidth = width
         ctx.strokeStyle = color
         ctx.stroke()
     }
 
+    /**
+     * Draws a point.
+     * @param {Vec2} pos Position.
+     * @param {string} color Color.
+     * @param {number} radius Radius.
+     */
     drawPoint(pos, color = 'black', radius = Shape2D.defaultLineWidth + 2) { // add option to display position
         const ctx = this.ctx
         ctx.fillStyle = color
         ctx.beginPath()
-        ctx.arc(pos.x * this.scaleX, pos.y * this.scaleY, radius, 0, Math.PI * 2)
+        ctx.arc(pos.x * this.scaleX + this.translationX, pos.y * this.scaleY + this.translationY, radius, 0, Math.PI * 2)
         ctx.fill()
     }
 
+    /**
+     * Draws points.
+     * @param {Vec2[]} points Points to draw.
+     * @param {string} color Color.
+     * @param {number} radius Radius of the points.
+     */
     drawPoints(points, color = 'black', radius = Shape2D.defaultLineWidth + 2) {
         const ctx = this.ctx
         ctx.fillStyle = color
         points.map(point => {
             ctx.beginPath()
-            ctx.arc(point.x * this.scaleX, point.y * this.scaleY, radius, 0, Math.PI * 2)
+            ctx.arc(point.x * this.scaleX + this.translationX, point.y * this.scaleY + this.translationY, radius, 0, Math.PI * 2)
             ctx.fill()
         })
     }
 
-    drawFunctionGraph(graph) { // make function to draw dots on certain points 
+    /**
+     * Draws a function graph object.
+     * @param {FunctionGraph} graph Graph to draw.
+     */
+    drawFunctionGraph(graph) {
         const ctx = this.ctx
 
         ctx.strokeStyle = graph.outlineColor
@@ -260,17 +352,7 @@ class Graph {
             if (isNaN(graph.points[i].y) || !isFinite(graph.points[i].y)) {
                 ctx.stroke()
                 ctx.beginPath()
-                // if (graph.points[i].y === -Infinity) {
-                //     ctx.moveTo(graph.points[i].x * this.scaleX, 10000 * this.scaleY)
-                // }
-                // else if (graph.points[i].y === Infinity) {
-                //     ctx.moveTo(graph.points[i].x * this.scaleX, -10000 * this.scaleY)
-                // }
-                // else {
                 ctx.moveTo(graph.points[i].x * this.scaleX + this.translationX, graph.points[i].y * this.scaleY + this.translationY)
-                // ctx.moveTo(graph.points[i+1].x * this.scaleX, graph.points[i+1].y * this.scaleY)
-                // i++????
-                // }
             }
             else {
                 ctx.lineTo(graph.points[i].x * this.scaleX + this.translationX, graph.points[i].y * this.scaleY + this.translationY)
@@ -324,7 +406,6 @@ class Graph {
     drawText(text, x, y, color='black', size=30, baseline='bottom', algin='center') {
         const ctx = this.ctx
         ctx.font = size + 'px ' + this.font
-        console.log(size)
         ctx.textBaseline = baseline
         ctx.textAlign = algin
         ctx.fillStyle = color
@@ -338,7 +419,6 @@ class Graph {
      */
     draw(object) {
         if (object instanceof Text2D) {
-            console.log(object.size)
             this.drawText(object.text, object.pos.x, object.pos.y, object.color, object.size, object.baseline, object.align)
         } 
         else if (object instanceof FunctionGraph) {
@@ -409,8 +489,13 @@ class Shape2D {
         this.closed = closed
     }
 
+    /**
+     * Creates a copy of the object
+     */
     clone() {
-        return Object.assign(new Shape2D, JSON.parse(JSON.stringify(this)))
+        const shape = Object.assign(new Shape2D, JSON.parse(JSON.stringify(this)))
+        shape.points = shape.points.map(point => new Vec2(point.x, point.y, point.w))
+        return shape
     }
 
     /**
@@ -429,6 +514,13 @@ class Shape2D {
 }
 
 class Rectangle extends Shape2D {
+    /**
+     * Rectangle.
+     * @param {Vec2} pos1 First corner of the rectangle.
+     * @param {Vec2} pos2 Opposite corner.
+     * @param {string} color Color.
+     * @param {boolean} fill Should it be filled.
+     */
     constructor(pos1, pos2, color, fill) {
         pos2 = pos2.subtract(pos1)
         super(
@@ -444,6 +536,14 @@ class Rectangle extends Shape2D {
 }
 
 class RegularPolygon extends Shape2D {
+    /**
+     * Regular polygon.
+     * @param {Vec2} pos Position.
+     * @param {number} pointCount How many points should it be made of. How detailed should it be.
+     * @param {number} radius Radius.
+     * @param {string} color Color.
+     * @param {boolean} fill Should it be filled.
+     */
     constructor(pos, pointCount = 3, radius = 5, color, fill) {
         const step = Math.PI * 2 / pointCount
         const points = []
@@ -458,12 +558,30 @@ class RegularPolygon extends Shape2D {
 }
 
 class Circle extends RegularPolygon {
+    /**
+     * Circle.
+     * @param {Vec2} pos Position.
+     * @param {number} radius Radius.
+     * @param {string} color Color.
+     * @param {boolean} fill Should it be filled.
+     * @param {number} pointCount How many points should it be made of. How detailed should it be.
+     */
     constructor(pos, radius = 5, color, fill, pointCount = 50) {
         super(pos, pointCount, radius, color, fill)
     }
 }
 
 class Arc extends Shape2D {
+    /**
+     * Arc.
+     * @param {Vec2} pos Position.
+     * @param {number} startAngle Start angle in radians.
+     * @param {number} endAngle End angle in radians.
+     * @param {number} radius Radius.
+     * @param {string} color Color.
+     * @param {boolean} fill Should it be filled.
+     * @param {number} pointCount How many points should it be made of. How detailed should it be.
+     */
     constructor(pos, startAngle, endAngle, radius, color, fill = false, pointCount = 50) {
         const step = (endAngle - startAngle) / pointCount
         const points = []
@@ -478,12 +596,27 @@ class Arc extends Shape2D {
 }
 
 class Line extends Shape2D {
+    /**
+     * Line.
+     * @param {Vec2} pos1 Start.
+     * @param {Vec2} pos2 End.
+     * @param {string} color Line color.
+     */
     constructor(pos1, pos2, color) {
         super([pos1, pos2], color, false, false)
     }
 }
 
 class FunctionGraph extends Shape2D {
+    /**
+     * A function graph shape.
+     * @param {function} fun Function to plot.
+     * @param {number} start Start of the graph.
+     * @param {number} end End of the graph.
+     * @param {string} color Graph's color.
+     * @param {number} step Distance between every point (e.g. 0.01)
+     * @param {number} precision How many decimals points to check (e.g. 2)
+     */
     constructor(fun, start, end, color, step=0.01, precision=2) {
         if (start > end) return new Shape2D([])
         
@@ -723,10 +856,10 @@ class Vec2 {
     }
 }
 
-/**
- * A 3x3 matrix.
- */
 class Mat3x3 {
+    /**
+     * A 3x3 matrix.
+     */
     constructor() {
         this.m = Array(3).fill().map(()=>Array(3).fill(0))
     }
@@ -886,6 +1019,15 @@ class CanvasRecorder {
         this.mediaRecorder
     }
 
+    handleDataAvailable(event) {
+        if (event.data.size > 0) {
+            this.recordedChunks.push(event.data)
+        }   
+    }
+
+    /**
+     * Starts the canvas recording.
+     */
     start() {
         const stream = this.canvas.captureStream(this.framerate)
         const options = { mimeType: "video/webm; codecs=vp8" }
@@ -895,16 +1037,16 @@ class CanvasRecorder {
         this.mediaRecorder.start()
     }
 
+    /**
+     * Stops the canvas recording.
+     */
     stop() {
         this.mediaRecorder.stop()
     }
 
-    handleDataAvailable(event) {
-        if (event.data.size > 0) {
-            this.recordedChunks.push(event.data)
-        }   
-    }
-
+    /**
+     * Opens a download prompt for the recorded video.
+     */
     download() {
         if (this.recordedChunks.length) {
             const blob = new Blob(this.recordedChunks, {
@@ -924,5 +1066,147 @@ class CanvasRecorder {
                 this.download()
             })
         }
+    }
+}
+
+class InputHTML {
+    /**
+     * Creates a html input element. This is supposed to be used with input types range and number.
+     * @param {string} name Input's name.
+     * @param {string} type Type of the input.
+     * @param {number} min Min value.
+     * @param {number} max Max value.
+     * @param {number} step Step.
+     */
+    constructor(name, type, min, max, step, defaultValue) {
+        this.input = document.createElement('input')
+        this.input.type = type
+        this.input.min = min
+        this.input.max = max
+        this.input.step = step
+        this.input.value = defaultValue || (min + max) / 2
+
+        this.name = document.createElement('div')
+        this.name.innerText = name
+
+        this.display = document.createElement('div')
+        this.display.innerText = this.input.value
+
+        this.element = document.createElement('div')
+        this.element.style.textAlign = 'center'
+        this.element.appendChild(this.name)
+        this.element.appendChild(this.input)
+        this.element.appendChild(this.display)
+
+        this.input.addEventListener('input', e => {
+            this.display.innerText = e.target.value
+        })
+
+        document.body.appendChild(this.element)
+    }
+
+    /**
+     * Returns the value of the input.
+     */
+    value() {
+        return Number(this.input.value)
+    }
+}
+
+class InputPointer {
+    /**
+     * Allows to get the mouse position relative to the graph position and translation.
+     * @param {Graph} graph The graph to get the pointer position on.
+     */
+    constructor(graph) {
+        this.graph = graph
+        this.pointer = {
+            x: 0,
+            y: 0,
+            pressed: false
+        }
+
+        graph.canvas.addEventListener('pointermove', this)
+        graph.canvas.addEventListener('pointerdown', this)
+        graph.canvas.addEventListener('pointerup', this)
+    }
+
+    handleEvent(e) {
+        switch (e.type) {
+            case 'pointermove': {
+                this.handlePointerMove(e)
+                break
+            }
+
+            case 'pointerdown': {
+                this.handlePointerDown(e)
+                break
+            }
+            
+            case 'pointerup': {
+                this.handlePointerUp(e)
+                break
+            }
+        }
+    }
+
+    handlePointerMove(e) {
+        const pos = this.adjustMousePosition(e.clientX, e.clientY)
+        this.pointer.x = pos.x
+        this.pointer.y = pos.y
+    }
+
+    handlePointerDown(e) {
+        const pos = this.adjustMousePosition(e.clientX, e.clientY)
+        this.pointer.x = pos.x
+        this.pointer.y = pos.y
+        this.pointer.pressed = true
+    }
+
+    handlePointerUp(e) {
+        const pos = this.adjustMousePosition(e.clientX, e.clientY)
+        this.pointer.x = pos.x
+        this.pointer.y = pos.y
+        this.pointer.pressed = false
+    }
+
+    adjustMousePosition(x, y) {
+        const rect = this.graph.canvas.getBoundingClientRect()
+        return {
+            x: (x - rect.left - g.translationX) / g.scaleX,
+            y: (y - rect.top - g.translationY) / g.scaleY
+        }
+    }
+
+    /**
+     * Returns the current pointer position.
+     * @returns {object}
+     */
+    getPos() {
+        return { x: this.pointer.x, y: this.pointer.y }
+    }
+
+    /**
+     * Returns the current pointer position on the x axis.
+     * @returns {number}
+     */
+    getPosX() {
+        return this.pointer.x
+    }
+
+    /**
+     * Returns the current pointer position on the y axis.
+     * @returns {number}
+     */
+    getPosY() {
+        return this.pointer.y
+    }
+
+    /**
+     * Returns if the pointer is pressed.
+     * @returns {boolean}
+     */
+    isPressed() {
+        return this.pointer.pressed
     }
 }
