@@ -28,6 +28,8 @@ class Graph {
         this.canvas = document.createElement('canvas')
         this.canvas.width = 1000
         this.canvas.height = 1000
+        this.canvas.style.display = 'block'
+        this.canvas.style.clear = 'both'
         this.ctx = this.canvas.getContext('2d')
 
         this.ctx.lineCap = 'round'
@@ -42,6 +44,11 @@ class Graph {
         document.body.style.fontFamily = 'Arial'
 
         document.body.appendChild(this.canvas)
+
+        const inputs = document.createElement('div')
+        inputs.style.float = 'left'
+        inputs.id = 'inputs'
+        document.body.appendChild(inputs)
         return this.canvas
     }
 
@@ -460,12 +467,6 @@ class TextPoint extends Text2D {
     }
 }
 
-class Path {
-    constructor() {
-        
-    }
-}
-
 class Shape2D {
     static shapeCount = 0
     static colors = ['red', 'green', 'darkblue', 'magenta', 'orange', 'lightblue', 'purple', 'yellowgreen', 'darkyellow', 'aqua', 'darkpurple', 'grey']
@@ -859,9 +860,10 @@ class Vec2 {
 class Mat3x3 {
     /**
      * A 3x3 matrix.
+     * @param {[number][]} array Matrix as an array.
      */
-    constructor() {
-        this.m = Array(3).fill().map(()=>Array(3).fill(0))
+    constructor(array) {
+        this.m = typeof array !== 'undefined' ? array[0].map((_, col) => array.map(row => row[col])) : Array(3).fill().map(()=>Array(3).fill(0))
     }
 
     /**
@@ -941,6 +943,16 @@ class Mat3x3 {
     }
 
     /**
+     * Returns the transpose of this matrix.
+     * @returns {Mat3x3} Multiplied matrix.
+     */
+    transpose() {
+        const mat = new Mat3x3()
+        mat.m = this.m[0].map((_, col) => this.m.map(row => row[col]))
+        return mat
+    }
+
+    /**
      * Returns the result of matrix by matrix multiplication.
      * @param {Mat3x3} mat The matrix to multiply by.
      * @returns {Mat3x3} Multiplied matrix
@@ -966,6 +978,14 @@ function random(min, max) {
     min = Math.ceil(min)
     max = Math.floor(max)
     return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+/**
+ * Returns a random hex color.
+ * @returns {string} Color.
+ */
+function randomColor() {
+    return '#' + Math.floor(Math.random()*16777215).toString(16)
 }
 
 /**
@@ -996,6 +1016,78 @@ function degToRad(deg) {
 }
 
 /**
+ * An implementation of python's range function.
+ * @param {number} start 
+ * @param {number} end 
+ * @param {number} [step=1] 
+ */
+function range(start, end, step=1) {
+    if (typeof end === 'undefined') {
+        end = start
+        start = 0
+    }
+    
+    if ((step < 0 && start <= end) || (step > 0 && start >= end)) {
+        return []
+    }
+
+    const result = []
+    for (let i = start; step > 0 ? i < end : i > end; i += step) {
+        result.push(i)
+    }
+
+    return result
+}
+
+/**
+ * Returns a result of a quadratic equation as an array.
+ * @param {number} a 
+ * @param {number} b 
+ * @param {number} c 
+ * @returns {number}
+ */
+function quadraticEquation(a, b, c) {
+    const delta = b ** 2 - 4 * a * c
+    const deltaSqrt = Math.sqrt(delta)
+    console.log(delta)
+    if (delta == 0) {
+        // Δ = 0 when the vertex of the parabola is on y = 0.
+        return [-b / (2 * a)]
+    }
+    else if (delta > 0) {
+        // Δ > 0 when the parabola's are intersect the y axis.
+        return [
+            (-b + deltaSqrt) / (2 * a),
+            (-b - deltaSqrt) / (2 * a)
+        ]
+    }
+    // Δ < 0 when the parabola's arms don't intersect the y axis.
+    return []
+}
+
+/**
+ * Returns the factorial of n.
+ * @param {number} n N
+ */
+function factorial(n) {
+    let out = 1
+    while (n > 1) {
+        out *= n
+        n -= 1
+    }
+    return out
+}
+
+/**
+ * Returns the number of combinations of k items from a set of n items.
+ * @param {number} n 
+ * @param {number} k 
+ */
+function combination(n, k) {
+    return factorial(n) / (factorial(k) * factorial(n-k))
+}
+
+/**
  * Return the result of linear interpolation.
  * @param {number} min Min value.
  * @param {number} max Max value.
@@ -1010,7 +1102,7 @@ class CanvasRecorder {
     /**
      * Records a canvas to a webm.
      * @param {HTMLCanvasElement} canvas The canvas to be recorded.
-     * @param {*} framerate The framerate of the recording.
+     * @param {number} framerate The framerate of the recording.
      */
     constructor(canvas, framerate) {
         this.canvas = canvas
@@ -1094,6 +1186,7 @@ class InputHTML {
 
         this.element = document.createElement('div')
         this.element.style.textAlign = 'center'
+        this.element.style.float = 'left'
         this.element.appendChild(this.name)
         this.element.appendChild(this.input)
         this.element.appendChild(this.display)
@@ -1102,7 +1195,7 @@ class InputHTML {
             this.display.innerText = e.target.value
         })
 
-        document.body.appendChild(this.element)
+        document.getElementById('inputs').appendChild(this.element)
     }
 
     /**
@@ -1110,6 +1203,48 @@ class InputHTML {
      */
     value() {
         return Number(this.input.value)
+    }
+}
+
+class ButtonHTML {
+    /**
+     * Creates a html button element.
+     * @param {string} name Button name.
+     * @param {function} fun Function to execute on button press.
+     */
+    constructor(name, fun) {
+        this.button = document.createElement('button')
+        this.button.innerText = name
+        document.getElementById('inputs').appendChild(this.button)
+        this.button.addEventListener('click', fun)
+    }
+}
+
+class CheckboxHTML {
+    constructor(name, checked, unchecked, defaultValue=false) {
+        this.input = document.createElement('input')
+        this.input.type = 'checkbox'
+        this.input.checked = defaultValue
+
+        this.name = document.createElement('div')
+        this.name.innerText = name
+
+        this.element = document.createElement('div')
+        this.element.style.textAlign = 'center'
+        this.element.style.float = 'left'
+        this.element.appendChild(this.name)
+        this.element.appendChild(this.input)
+
+        document.getElementById('inputs').appendChild(this.element)
+
+        this.input.addEventListener('input', e => {
+            if (e.target.checked) {
+                checked()
+            }
+            else {
+                unchecked()
+            }
+        })
     }
 }
 
