@@ -542,48 +542,52 @@ class Graph {
         let faces = []
         
         if (scene.culling) {
-            for (const triangle of scene.meshes[0].faces) {
-                const tri = triangle.clone()
-    
-                for (const p of tri.p) {
-                    p.multByMat(scene.matrix)
-                    p.z += 3
-                }
-    
-                const normal = triangle.normal.multMat(scene.matrix)
-            
-                if (normal.clone().dot(tri.p[0]) < 0) {
-                    if (tri.p[0].z < 0) {
-                        continue
+            for (const mesh of scene.meshes) {
+                for (const triangle of mesh.faces) {
+                    const tri = triangle.clone()
+        
+                    for (const p of tri.p) {
+                        p.multByMat(scene.matrix)
+                        p.z += 3
                     }
-                    // const lightDirection = 
-                    
-                    if (scene.shading) 
-                        tri.color.multBy(scene.lightDirection.dot(normal))
-    
-                    faces.push(tri)
+        
+                    const normal = triangle.normal.multMat(scene.matrix)
+                
+                    if (normal.clone().dot(tri.p[0]) < 0) {
+                        if (tri.p[0].z < 0) {
+                            continue
+                        }
+                        // const lightDirection = 
+                        
+                        if (scene.shading) 
+                            tri.color.multBy(scene.lightDirection.dot(normal))
+        
+                        faces.push(tri)
+                    }
                 }
             }
         }
         else {
-            for (const triangle of scene.meshes[0].faces) {
-                const tri = triangle.clone()
-    
-                for (const p of tri.p) {
-                    p.multByMat(scene.matrix)
-                    p.z += 3
-                }
-            
-                if (tri.p[0].z < 0) {
-                    continue
-                }
+            for (const mesh of scene.meshes) {
+                for (const triangle of mesh.faces) {
+                    const tri = triangle.clone()
+        
+                    for (const p of tri.p) {
+                        p.multByMat(scene.matrix)
+                        p.z += 3
+                    }
                 
-                if (scene.shading) {
-                    const normal = triangle.normal.multMat(scene.matrix)
-                    tri.color.multBy(scene.lightDirection.dot(normal))
+                    if (tri.p[0].z < 0) {
+                        continue
+                    }
+                    
+                    if (scene.shading) {
+                        const normal = triangle.normal.multMat(scene.matrix)
+                        tri.color.multBy(scene.lightDirection.dot(normal))
+                    }
+    
+                    faces.push(tri)
                 }
-
-                faces.push(tri)
             }
         }
 
